@@ -1,0 +1,70 @@
+{
+  "name": "deepread",
+  "version": "1.0.0",
+  "description": "Upload pdf, markdown, epub, txt, xlsx and csv files and read them in the right sidebar; send selected text to the composer.",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "pdf",
+    "epub",
+    "markdown",
+    "reader",
+    "sidebar"
+  ],
+  "license": "MIT",
+  "author": "zhaokaiqiang <kaiqiang.zh@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaiqiangzhao/deepread.git"
+  },
+  "homepage": "https://github.com/kaiqiangzhao/deepread#readme",
+  "bugs": {
+    "url": "https://github.com/kaiqiangzhao/deepread/issues"
+  },
+  "type": "module",
+  "icon": "./icon.svg",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "client.pdfjs.js",
+    "client.pdfjs-worker.js",
+    "client.xlsx.js",
+    "client.jszip.js",
+    "client.markdown.js",
+    "client.epub.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "LICENSE.pdfjs.txt",
+    "LICENSE.sheetjs.txt",
+    "LICENSE.jszip.txt",
+    "LICENSE.markdown.txt",
+    "LICENSE.epub.txt",
+    "LICENSE.lucide.txt",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "dsh": ">=0.2.1-rc.5"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  }
+}
