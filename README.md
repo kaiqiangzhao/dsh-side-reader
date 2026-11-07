@@ -15,6 +15,16 @@ DeepRead 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里打�
 - 划词后弹出工具栏:翻译、解释、总结、复制、发到输入框。按钮可新增、删除、改图标、拖动排序,也可折叠到下拉菜单。
 - 文件只在你的浏览器里处理,插件不会上传文件。
 
+### 截图
+
+| Markdown 渲染与划词 | EPUB 阅读 |
+|---|---|
+| ![Markdown](assets/screenshot-2-markdown.png) | ![EPUB](assets/screenshot-4-epub.png) |
+
+| PDF 划词 | 文件历史 | 自定义按钮 |
+|---|---|---|
+| ![PDF](assets/screenshot-3-pdf.png) | ![历史](assets/screenshot-1-library.png) | ![设置](assets/screenshot-5-settings.png) |
+
 ### 安装
 
 ```sh
@@ -58,6 +68,16 @@ DeepRead is a right-sidebar reader for DeepSeek Harness (DSH). Open a document i
 - Markdown: rendered view (headings, tables, syntax highlighting, task lists, footnotes and more). The eye icon switches to the raw source with `#` marks.
 - Selection toolbar: translate, explain, summarize, copy, send to composer. Buttons can be added, removed, given another icon, reordered by dragging, or folded into a menu.
 - Files are processed in your browser only. The plugin does not upload them.
+
+### Screenshots
+
+| Markdown with selection toolbar | EPUB reader |
+|---|---|
+| ![Markdown](assets/screenshot-2-markdown.png) | ![EPUB](assets/screenshot-4-epub.png) |
+
+| PDF selection | File history | Custom buttons |
+|---|---|---|
+| ![PDF](assets/screenshot-3-pdf.png) | ![History](assets/screenshot-1-library.png) | ![Settings](assets/screenshot-5-settings.png) |
 
 ### Install
 
