@@ -27,11 +27,15 @@ Side Reader 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里�
 
 ### 安装
 
+**桌面版(推荐)**:打开侧边栏的 **Plugins** 页,在 **Add plugin** 里输入包名 `dsh-side-reader`,安装后启用。不需要命令行,也不用管 profile。
+
+**命令行**:`--profile` 是必填项,填**你自己的 profile 名**。桌面版的保留 profile 叫 `desktop`,只有在用应用自带的 `dsh` 命令时才允许这么填:
+
 ```sh
-dsh plugin --profile <profile 名> add dsh-side-reader
+dsh plugin --profile <你的 profile 名> add dsh-side-reader
 ```
 
-或从 GitHub / tarball 安装,见 [DSH 打包与安装文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)。本插件不需要构建步骤。
+从 GitHub 或 tarball 安装也可以,见 [DSH 打包与安装文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)。本插件不需要构建步骤。
 
 装好后,在右侧栏的“Side Reader”入口里上传文件。Side Reader 不接管 `*.pdf` 的默认打开方式,只通过自己的入口打开文件。
 
@@ -81,11 +85,15 @@ Side Reader is a right-sidebar reader for DeepSeek Harness (DSH). Open a documen
 
 ### Install
 
+**Desktop app (recommended)**: open the **Plugins** page in the sidebar, enter the package name `dsh-side-reader` in **Add plugin**, then enable it. No terminal and no profile name involved.
+
+**Command line**: `--profile` is required and takes **your own profile name**. The desktop app's reserved profile is called `desktop`, and only the `dsh` command shipped with the app accepts that name:
+
 ```sh
-dsh plugin --profile <profile> add dsh-side-reader
+dsh plugin --profile <your-profile> add dsh-side-reader
 ```
 
-Or install from GitHub or a tarball; see the [DSH packaging guide](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.md). The plugin needs no build step.
+Installing from GitHub or a tarball also works; see the [DSH packaging guide](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.md). The plugin needs no build step.
 
 After installation, upload files from the "Side Reader" entry in the right sidebar. Side Reader does not take over the default handling of `*.pdf`; files open only through its own entry.
 
