@@ -15,11 +15,11 @@
   "author": "zhaokaiqiang <kaiqiang.zh@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaiqiangzhao/deepread.git"
+    "url": "git+https://github.com/kaiqiangzhao/dsh-side-reader.git"
   },
-  "homepage": "https://github.com/kaiqiangzhao/deepread#readme",
+  "homepage": "https://github.com/kaiqiangzhao/dsh-side-reader#readme",
   "bugs": {
-    "url": "https://github.com/kaiqiangzhao/deepread/issues"
+    "url": "https://github.com/kaiqiangzhao/dsh-side-reader/issues"
   },
   "type": "module",
   "icon": "./icon.svg",
