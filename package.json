@@ -1,5 +1,5 @@
 {
-  "name": "deepread",
+  "name": "dsh-plugin-deepread",
   "version": "1.0.0",
   "description": "Upload pdf, markdown, epub, txt, xlsx and csv files and read them in the right sidebar; send selected text to the composer.",
   "keywords": [

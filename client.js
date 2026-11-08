@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: 'deepread',
+  id: 'dsh-plugin-deepread',
   factory(require) {
     const React = require('react');
     const h = React.createElement;

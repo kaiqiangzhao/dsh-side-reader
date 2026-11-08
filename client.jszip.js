@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "deepread",
+  id: "dsh-plugin-deepread",
   chunk: "client.jszip.js",
   factory() {
     var module = { exports: {} };

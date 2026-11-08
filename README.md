@@ -28,7 +28,7 @@ DeepRead 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里打�
 ### 安装
 
 ```sh
-dsh plugin --profile <profile 名> add deepread
+dsh plugin --profile <profile 名> add dsh-plugin-deepread
 ```
 
 或从 GitHub / tarball 安装,见 [DSH 打包与安装文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)。本插件不需要构建步骤。
@@ -82,7 +82,7 @@ DeepRead is a right-sidebar reader for DeepSeek Harness (DSH). Open a document i
 ### Install
 
 ```sh
-dsh plugin --profile <profile> add deepread
+dsh plugin --profile <profile> add dsh-plugin-deepread
 ```
 
 Or install from GitHub or a tarball; see the [DSH packaging guide](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.md). The plugin needs no build step.
