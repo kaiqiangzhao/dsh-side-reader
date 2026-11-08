@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "dsh-plugin-deepread",
+  id: "dsh-side-reader",
   chunk: "client.jszip.js",
   factory() {
     var module = { exports: {} };

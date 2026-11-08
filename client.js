@@ -1,14 +1,14 @@
 window.__ModuleLoader__.load({
-  id: 'dsh-plugin-deepread',
+  id: 'dsh-side-reader',
   factory(require) {
     const React = require('react');
     const h = React.createElement;
     const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
     const NS = 'pdfReader';
-    const PICKER_ID = 'deepread';
+    const PICKER_ID = 'dsh-side-reader';
     const PICKER_KIND = 'pdf-reader';
-    const VIEWER_ID = 'deepread/viewer';
+    const VIEWER_ID = 'dsh-side-reader/viewer';
     const VIEWER_KIND = 'pdf-reader-viewer';
     const MAX_SELECTION = 100000;
     const MIN_ZOOM = 0.25;
@@ -25,7 +25,7 @@ window.__ModuleLoader__.load({
     const TOOLBAR_HEIGHT = 48;
 
     const zh = {
-      'tab.title': 'DeepRead',
+      'tab.title': 'Side Reader',
       'guide.description': '阅读文档,划词发送到输入框',
       'header.hint': '划词后点击弹出的按钮,发送到输入框',
       'upload.button': '上传文件',
@@ -123,7 +123,7 @@ window.__ModuleLoader__.load({
       'settings.hint': '拖动卡片调整顺序,或拖到另一个区域',
     };
     const en = {
-      'tab.title': 'DeepRead',
+      'tab.title': 'Side Reader',
       'guide.description': 'Read documents and send selections to the composer',
       'header.hint': 'Select text, then click a popup button to send it to the composer',
       'upload.button': 'Upload file',
@@ -480,7 +480,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
     }
     /** Icon of a file kind in the upload history. */
     const FILE_KIND_ICONS = { epub: 'bookOpen', sheet: 'spreadsheet', table: 'spreadsheet', text: 'alignLeft' };
-    /** The DeepRead logo: a black four-point star and five text lines on a white rounded square (350x350 grid). */
+    /** The Side Reader logo: a black four-point star and five text lines on a white rounded square (350x350 grid). */
     const LOGO = [{"d":"M350 112C350 72.7963 350 53.1945 342.37 38.2207C335.659 25.0493 324.951 14.3407 311.779 7.62954C296.806 0 277.204 0 238 0H112C72.7963 0 53.1945 0 38.2207 7.62954C25.0493 14.3407 14.3407 25.0493 7.62955 38.2207C0 53.1945 0 72.7963 0 112V238C0 277.204 0 296.806 7.62955 311.779C14.3407 324.951 25.0493 335.659 38.2207 342.37C53.1945 350 72.7963 350 112 350H238C277.204 350 296.806 350 311.779 342.37C324.951 335.659 335.659 324.951 342.37 311.779C350 296.806 350 277.204 350 238V112Z","fill":"white"},{"d":"M278 185C283.523 185 288 180.523 288 175C288 169.477 283.523 165 278 165H252C246.477 165 242 169.477 242 175C242 180.523 246.477 185 252 185H278Z","fill":"black"},{"d":"M278 100C283.523 100 288 95.5228 288 90C288 84.4772 283.523 80 278 80H177C171.477 80 167 84.4772 167 90C167 95.5228 171.477 100 177 100H278Z","fill":"black"},{"d":"M278 270C283.523 270 288 265.523 288 260C288 254.477 283.523 250 278 250H177C171.477 250 167 254.477 167 260C167 265.523 171.477 270 177 270H278Z","fill":"black"},{"d":"M278 142C283.523 142 288 137.523 288 132C288 126.477 283.523 122 278 122H209C203.477 122 199 126.477 199 132C199 137.523 203.477 142 209 142H278Z","fill":"black"},{"d":"M278 228C283.523 228 288 223.523 288 218C288 212.477 283.523 208 278 208H209C203.477 208 199 212.477 199 218C199 223.523 203.477 228 209 228H278Z","fill":"black"},{"d":"M122.481 91.3498C123.395 83.9724 127.99 80 133.5 80C139.01 80 143.605 83.9724 144.519 91.3498C159.212 146.923 162.077 149.788 217.65 164.481C225.028 165.395 229 169.99 229 175.5C229 181.01 225.028 185.605 217.65 186.519C162.077 201.212 159.212 204.077 144.519 259.65C143.605 267.028 139.01 271 133.5 271C127.99 271 123.395 267.028 122.481 259.65C107.788 204.077 104.923 201.212 49.3498 186.519C41.9724 185.605 38 181.01 38 175.5C38 169.99 41.9724 165.395 49.3498 164.481C104.923 149.788 107.788 146.923 122.481 91.3498Z","fill":"black"}];
     function LogoGlyph(props) {
       const size = (props && props.size) || 18;
@@ -501,7 +501,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       return h('button', { type: 'button', className: className ? 'pdfr-icon-btn ' + className : 'pdfr-icon-btn', title: label, 'aria-label': label, ...rest });
     }
 
-    const ADDRESS_PREFIX = 'dsh-resource://deepread/';
+    const ADDRESS_PREFIX = 'dsh-resource://dsh-side-reader/';
     /** Address of one stored PDF; the file name rides along so a restored tab can title itself synchronously. */
     function storedAddress(id, name) {
       return ADDRESS_PREFIX + encodeURIComponent(id) + '/' + encodeURIComponent(name);
@@ -651,7 +651,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       render() {
         if (this.state.error) {
           return h('div', { className: 'pdfr-center', role: 'alert' }, [
-            h('div', { key: 'm' }, 'DeepRead: ' + (this.state.error.message || String(this.state.error))),
+            h('div', { key: 'm' }, 'Side Reader: ' + (this.state.error.message || String(this.state.error))),
             h('button', { key: 'b', type: 'button', className: 'pdfr-btn', onClick: () => this.setState({ error: null }) }, 'Retry'),
           ]);
         }

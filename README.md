@@ -1,10 +1,10 @@
-# DeepRead
+# Side Reader
 
 [中文](#中文) | [English](#english)
 
 ## 中文
 
-DeepRead 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里打开文档,划词后点按钮,把选中的文字翻译、解释、总结、复制,或直接发到输入框。
+Side Reader 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里打开文档,划词后点按钮,把选中的文字翻译、解释、总结、复制,或直接发到输入框。
 
 ### 功能
 
@@ -28,12 +28,12 @@ DeepRead 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里打�
 ### 安装
 
 ```sh
-dsh plugin --profile <profile 名> add dsh-plugin-deepread
+dsh plugin --profile <profile 名> add dsh-side-reader
 ```
 
 或从 GitHub / tarball 安装,见 [DSH 打包与安装文档](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.zh.md)。本插件不需要构建步骤。
 
-装好后,在右侧栏的“DeepRead”入口里上传文件。DeepRead 不接管 `*.pdf` 的默认打开方式,只通过自己的入口打开文件。
+装好后,在右侧栏的“Side Reader”入口里上传文件。Side Reader 不接管 `*.pdf` 的默认打开方式,只通过自己的入口打开文件。
 
 ### 限制
 
@@ -58,7 +58,7 @@ MIT,见 [LICENSE](LICENSE)。
 
 ## English
 
-DeepRead is a right-sidebar reader for DeepSeek Harness (DSH). Open a document in the sidebar, select text, and translate, explain, summarize or copy it, or send it straight to the composer.
+Side Reader is a right-sidebar reader for DeepSeek Harness (DSH). Open a document in the sidebar, select text, and translate, explain, summarize or copy it, or send it straight to the composer.
 
 ### Features
 
@@ -82,12 +82,12 @@ DeepRead is a right-sidebar reader for DeepSeek Harness (DSH). Open a document i
 ### Install
 
 ```sh
-dsh plugin --profile <profile> add dsh-plugin-deepread
+dsh plugin --profile <profile> add dsh-side-reader
 ```
 
 Or install from GitHub or a tarball; see the [DSH packaging guide](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/develop/basic/publish.md). The plugin needs no build step.
 
-After installation, upload files from the "DeepRead" entry in the right sidebar. DeepRead does not take over the default handling of `*.pdf`; files open only through its own entry.
+After installation, upload files from the "Side Reader" entry in the right sidebar. Side Reader does not take over the default handling of `*.pdf`; files open only through its own entry.
 
 ### Limits
 
