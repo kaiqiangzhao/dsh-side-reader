@@ -9,7 +9,7 @@ Side Reader 是 DeepSeek Harness(DSH)的右侧栏阅读插件。在侧边栏里�
 ### 功能
 
 - 阅读 PDF、EPUB、Markdown、TXT、XLSX、CSV。上传过的文件保存在浏览器本地,可从历史列表重新打开。
-- PDF:缩放、适应宽度,文字可选。
+- PDF:缩放、适应宽度,文字可选。划词后可选四种颜色高亮,或点批注按钮高亮并写笔记;点击高亮可改色、改笔记或删除。工具栏的批注按钮打开列表,点条目跳转到对应位置,也可导出带批注的 PDF(标准 Highlight 批注,其他阅读器能看到)。高亮和笔记保存在浏览器本地,随文件删除而清除。
 - EPUB:保留书自己的样式和图片,有目录和字号调节。
 - Markdown:可渲染(标题、表格、代码高亮、任务列表、脚注等),点眼睛图标切换为带 `#` 的源码。
 - 划词后弹出工具栏:翻译、解释、总结、复制、发到输入框。按钮可新增、删除、改图标、拖动排序,也可折叠到下拉菜单。
@@ -54,6 +54,7 @@ MIT,见 [LICENSE](LICENSE)。
 | 组件 | 用途 | 许可证文件 |
 |---|---|---|
 | PDF.js | PDF 渲染 | `LICENSE.pdfjs.txt` (Apache-2.0) |
+| pdf-lib | 导出带批注的 PDF | `LICENSE.pdflib.txt` (MIT) |
 | SheetJS CE | Excel / CSV 解析 | `LICENSE.sheetjs.txt` (Apache-2.0) |
 | JSZip | zip 读取(以 MIT 许可使用) | `LICENSE.jszip.txt` |
 | Lucide | 图标 | `LICENSE.lucide.txt` (ISC) |
@@ -67,7 +68,7 @@ Side Reader is a right-sidebar reader for DeepSeek Harness (DSH). Open a documen
 ### Features
 
 - Reads PDF, EPUB, Markdown, TXT, XLSX and CSV. Uploaded files stay in your browser and can be reopened from the history list.
-- PDF: zoom, fit to width, selectable text.
+- PDF: zoom, fit to width, selectable text. Select text to highlight it in one of four colors, or use the note button to highlight and write a note; click a highlight to change its color, edit the note or delete it. The notes button opens a list that jumps to each highlight and can export a PDF with the annotations embedded as standard Highlight annotations, which other readers show. Highlights and notes stay in your browser and are removed with the file.
 - EPUB: keeps the book's own styles and images, with a table of contents and font size control.
 - Markdown: rendered view (headings, tables, syntax highlighting, task lists, footnotes and more). The eye icon switches to the raw source with `#` marks.
 - Selection toolbar: translate, explain, summarize, copy, send to composer. Buttons can be added, removed, given another icon, reordered by dragging, or folded into a menu.

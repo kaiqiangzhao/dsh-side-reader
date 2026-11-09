@@ -22,7 +22,16 @@ window.__ModuleLoader__.load({
     const MAX_NAME = 24;
     /** What a button does with the selection: put it in the composer, put it there and submit, or copy it. */
     const ACTIONS = ['insert', 'send', 'copy'];
-    const TOOLBAR_HEIGHT = 48;
+    const TOOLBAR_HEIGHT = 36;
+    const MAX_NOTE = 4000;
+    const MAX_QUOTE = 2000;
+    /** Highlight colors offered on a PDF selection; `value` is the swatch, the page layer paints the same colors from CSS. */
+    const HIGHLIGHT_COLORS = [
+      { id: 'yellow', value: '#ffd400' },
+      { id: 'green', value: '#4cd964' },
+      { id: 'blue', value: '#4da3ff' },
+      { id: 'pink', value: '#ff6fa8' },
+    ];
 
     const zh = {
       'tab.title': 'Side Reader',
@@ -65,6 +74,7 @@ window.__ModuleLoader__.load({
       'viewer.zoomOut': '缩小',
       'viewer.fit': '适应宽度',
       'viewer.reload': '重新加载',
+      'viewer.close': '关闭',
       'send.translate': '翻译',
       'send.explain': '解释',
       'send.summary': '总结',
@@ -121,6 +131,23 @@ window.__ModuleLoader__.load({
       'settings.icon.search': '搜索',
       'settings.icon.code': '代码',
       'settings.hint': '拖动卡片调整顺序,或拖到另一个区域',
+      'note.add': '注释',
+      'note.highlight': '高亮',
+      'note.placeholder': '写下批注…',
+      'note.delete': '删除高亮',
+      'note.marker': '查看批注',
+      'note.failed': '无法添加高亮',
+      'note.color.yellow': '黄色高亮',
+      'note.color.green': '绿色高亮',
+      'note.color.blue': '蓝色高亮',
+      'note.color.pink': '粉色高亮',
+      'notes.toggle': '批注列表',
+      'notes.title': '批注',
+      'notes.empty': '还没有高亮。选中文字后点颜色即可添加。',
+      'notes.page': '第 {page} 页',
+      'notes.export': '导出带批注的 PDF',
+      'notes.exporting': '正在导出…',
+      'notes.exportFailed': '无法导出此 PDF',
     };
     const en = {
       'tab.title': 'Side Reader',
@@ -163,6 +190,7 @@ window.__ModuleLoader__.load({
       'viewer.zoomOut': 'Zoom out',
       'viewer.fit': 'Fit width',
       'viewer.reload': 'Reload',
+      'viewer.close': 'Close',
       'send.translate': 'Translate',
       'send.explain': 'Explain',
       'send.summary': 'Summarize',
@@ -219,6 +247,23 @@ window.__ModuleLoader__.load({
       'settings.icon.search': 'Search',
       'settings.icon.code': 'Code',
       'settings.hint': 'Drag cards to reorder, or into the other section',
+      'note.add': 'Note',
+      'note.highlight': 'Highlight',
+      'note.placeholder': 'Write a note…',
+      'note.delete': 'Delete highlight',
+      'note.marker': 'Show note',
+      'note.failed': 'Could not add the highlight',
+      'note.color.yellow': 'Yellow highlight',
+      'note.color.green': 'Green highlight',
+      'note.color.blue': 'Blue highlight',
+      'note.color.pink': 'Pink highlight',
+      'notes.toggle': 'Notes list',
+      'notes.title': 'Notes',
+      'notes.empty': 'No highlights yet. Select text and pick a color to add one.',
+      'notes.page': 'Page {page}',
+      'notes.export': 'Export PDF with annotations',
+      'notes.exporting': 'Exporting…',
+      'notes.exportFailed': 'Could not export this PDF',
     };
 
     /** Mutable plugin state shared by the separately mounted slot components. */
@@ -333,13 +378,45 @@ window.__ModuleLoader__.load({
 .pdfr-toc{position:absolute;top:0;right:0;bottom:0;z-index:3;width:min(320px,86%);overflow:auto;box-sizing:border-box;padding:6px;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-left:.5px solid var(--dsw-alias-border-l2);box-shadow:-6px 0 18px rgba(0,0,0,.18)}
 .pdfr-toc-item{display:block;width:100%;box-sizing:border-box;text-align:left;border:none;background:none;color:inherit;font:inherit;padding:5px 8px;border-radius:6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pdfr-toc-item:hover{background:color-mix(in srgb,var(--dsw-alias-label-primary) 7%,transparent)}
-.pdfr-viewer{box-sizing:border-box;display:flex;flex-direction:column;height:100%;min-height:0;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-size:13px}
+.pdfr-viewer{position:relative;box-sizing:border-box;display:flex;flex-direction:column;height:100%;min-height:0;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-size:13px}
 .pdfr-toolbar{flex:none;user-select:none;-webkit-user-select:none;height:38px;box-sizing:border-box;display:flex;align-items:center;gap:2px;padding:0 8px 0 14px;border-bottom:.5px solid var(--dsw-alias-border-l1)}
 .pdfr-toolbar-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dsw-alias-label-secondary)}
 .pdfr-zoom{min-width:44px;text-align:center;color:var(--dsw-alias-label-secondary);font-size:12px;font-variant-numeric:tabular-nums}
 .pdfr-scroll{flex:1;min-height:0;overflow:auto;background:color-mix(in srgb,var(--dsw-alias-label-primary) 5%,var(--dsw-alias-bg-base));padding:${PAGE_INSET}px;box-sizing:border-box}
 .pdfr-pages{display:flex;flex-direction:column;align-items:flex-start;gap:${PAGE_GAP}px;width:max-content;min-width:100%}
-.pdfr-page{position:relative;flex:none;margin:0 auto;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);--scale-factor:1}
+.pdfr-page{position:relative;flex:none;margin:0 auto;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);--scale-factor:1;isolation:isolate}
+.pdfr-notes{position:absolute;top:38px;right:0;bottom:0;z-index:4;width:min(320px,86%);box-sizing:border-box;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-left:.5px solid var(--dsw-alias-border-l2);box-shadow:-6px 0 18px rgba(0,0,0,.18)}
+.pdfr-notes-head{flex:none;display:flex;align-items:center;gap:6px;padding:8px 8px 8px 12px;border-bottom:.5px solid var(--dsw-alias-border-l1);font-weight:600}
+.pdfr-notes-head .pdfr-icon-btn{margin-left:auto}
+.pdfr-notes-count{font-weight:400;color:var(--dsw-alias-label-secondary)}
+.pdfr-notes-list{flex:1;min-height:0;overflow:auto;padding:6px;display:flex;flex-direction:column;gap:2px}
+.pdfr-notes-item{display:flex;align-items:flex-start;border-radius:8px}
+.pdfr-notes-item:hover,.pdfr-notes-item:focus-within{background:color-mix(in srgb,var(--dsw-alias-label-primary) 7%,transparent)}
+.pdfr-notes-open{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding:8px;border:none;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:8px}
+.pdfr-notes-open:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}
+.pdfr-notes-page{color:var(--dsw-alias-label-secondary);font-size:11px}
+.pdfr-notes-quote{padding-left:8px;border-left:3px solid #ffd400;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.pdfr-notes-quote[data-color=green]{border-left-color:#4cd964}
+.pdfr-notes-quote[data-color=blue]{border-left-color:#4da3ff}
+.pdfr-notes-quote[data-color=pink]{border-left-color:#ff6fa8}
+.pdfr-notes-text{color:var(--dsw-alias-label-secondary);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;white-space:pre-wrap}
+.pdfr-notes-item>.pdfr-icon-btn{margin:6px 4px 0 0;opacity:0}
+.pdfr-notes-item:hover>.pdfr-icon-btn,.pdfr-notes-item:focus-within>.pdfr-icon-btn{opacity:1}
+@media (hover:none){.pdfr-notes-item>.pdfr-icon-btn{opacity:1}}
+.pdfr-notes-empty{margin:0;padding:24px 16px;text-align:center;color:var(--dsw-alias-label-secondary)}
+.pdfr-notes-error{flex:none;margin:6px;padding:8px 10px;border-radius:8px;color:var(--dsw-alias-state-error-primary);background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 10%,transparent);font-size:12px}
+.pdfr-hl[data-flash=true]{animation:pdfr-flash .6s ease-in-out 3}
+@keyframes pdfr-flash{50%{opacity:.95}}
+.pdfr-hls{position:absolute;inset:0;z-index:3;pointer-events:none}
+.pdfr-hl{position:absolute;border-radius:2px;opacity:.4;mix-blend-mode:multiply;background:#ffd400}
+.pdfr-hl[data-color=green]{background:#4cd964}
+.pdfr-hl[data-color=blue]{background:#4da3ff}
+.pdfr-hl[data-color=pink]{background:#ff6fa8}
+.pdfr-note-marker{position:absolute;pointer-events:auto;width:16px;height:16px;margin:-9px 0 0 -9px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(0,0,0,.28);border-radius:50%;background:#ffd400;color:#3a3000;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.pdfr-note-marker[data-color=green]{background:#4cd964;color:#07350f}
+.pdfr-note-marker[data-color=blue]{background:#4da3ff;color:#06264d}
+.pdfr-note-marker[data-color=pink]{background:#ff6fa8;color:#4d0a26}
+.pdfr-note-marker:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}
 .pdfr-page canvas{display:block;position:absolute;inset:0;width:100%;height:100%}
 .pdfr-page .textLayer{position:absolute;text-align:initial;inset:0;overflow:hidden;opacity:1;line-height:1;-webkit-text-size-adjust:none;text-size-adjust:none;forced-color-adjust:none;transform-origin:0 0;z-index:2}
 .pdfr-page .textLayer :is(span,br){color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
@@ -352,17 +429,37 @@ window.__ModuleLoader__.load({
 .pdfr-btn{height:30px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb,var(--dsw-alias-label-primary) 6%,transparent);color:var(--dsw-alias-label-primary);font:inherit;font-weight:500;cursor:pointer}
 .pdfr-btn:hover{background:color-mix(in srgb,var(--dsw-alias-label-primary) 12%,transparent)}
 .pdfr-btn:active{transform:translateY(.5px)}
-.pdfr-actions{position:fixed;z-index:1000;pointer-events:auto;box-sizing:border-box;display:flex;align-items:center;gap:2px;height:48px;padding:6px 8px;max-width:calc(100vw - 16px);border:.5px solid var(--dsw-alias-border-l2);border-radius:14px;background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);box-shadow:0 8px 28px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.12);font-size:14px;line-height:1.4;user-select:none;-webkit-user-select:none}
-.pdfr-send{flex:0 1 auto;min-width:0;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:none;border-radius:10px;background:none;color:inherit;font:inherit;white-space:nowrap;cursor:pointer}
+.pdfr-actions{position:fixed;z-index:1000;pointer-events:auto;box-sizing:border-box;display:flex;align-items:center;gap:2px;height:36px;padding:4px 5px;max-width:calc(100vw - 16px);border:.5px solid var(--dsw-alias-border-l2);border-radius:10px;background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);box-shadow:0 6px 20px rgba(0,0,0,.16),0 1px 3px rgba(0,0,0,.12);font-size:12px;line-height:1.4;user-select:none;-webkit-user-select:none}
+.pdfr-send{flex:0 1 auto;min-width:0;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 8px;border:none;border-radius:7px;background:none;color:inherit;font:inherit;white-space:nowrap;cursor:pointer}
 .pdfr-send:hover,.pdfr-send[aria-expanded=true]{background:color-mix(in srgb,var(--dsw-alias-label-primary) 8%,transparent)}
 .pdfr-send:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}
-.pdfr-send-label{min-width:0;max-width:160px;overflow:hidden;text-overflow:ellipsis}
-.pdfr-actions-sep{flex:none;width:1px;height:24px;margin:0 4px 0 8px;background:var(--dsw-alias-border-l2)}
-.pdfr-send-more{padding:0 8px}
-.pdfr-actions-menu{position:absolute;right:0;z-index:1;overflow-y:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;width:max-content;max-width:calc(100vw - 16px);padding:6px;border:.5px solid var(--dsw-alias-border-l2);border-radius:14px;background:var(--dsw-alias-bg-overlay);box-shadow:0 8px 28px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.12)}
+.pdfr-send-label{min-width:0;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.pdfr-actions-sep{flex:none;width:1px;height:18px;margin:0 3px 0 5px;background:var(--dsw-alias-border-l2)}
+.pdfr-send-more{padding:0 5px}
+.pdfr-actions-menu{position:absolute;right:0;z-index:1;overflow-y:auto;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;width:max-content;max-width:calc(100vw - 16px);padding:4px;border:.5px solid var(--dsw-alias-border-l2);border-radius:10px;background:var(--dsw-alias-bg-overlay);box-shadow:0 6px 20px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.12)}
 .pdfr-actions-menu[data-side=below]{top:calc(100% + 6px)}
 .pdfr-actions-menu[data-side=above]{bottom:calc(100% + 6px)}
 .pdfr-actions-menu .pdfr-send{width:100%;max-width:none;justify-content:flex-start}
+.pdfr-hl-pick{position:relative;flex:none;display:flex}
+.pdfr-hl-dot{flex:none;width:8px;height:8px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.pdfr-hl-pop{position:absolute;left:0;z-index:2;display:flex;gap:2px;padding:4px;border:.5px solid var(--dsw-alias-border-l2);border-radius:10px;background:var(--dsw-alias-bg-overlay);box-shadow:0 6px 20px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.12)}
+.pdfr-hl-pop[data-side=below]{top:100%;margin-top:2px}
+.pdfr-hl-pop[data-side=above]{bottom:100%;margin-bottom:2px}
+.pdfr-hl-pop::before{content:"";position:absolute;left:0;right:0;height:8px}
+.pdfr-hl-pop[data-side=below]::before{top:-8px}
+.pdfr-hl-pop[data-side=above]::before{bottom:-8px}
+.pdfr-swatch{flex:none;width:24px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:7px;background:none;color:inherit;cursor:pointer}
+.pdfr-swatch:hover{background:color-mix(in srgb,var(--dsw-alias-label-primary) 8%,transparent)}
+.pdfr-swatch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}
+.pdfr-swatch>span{width:15px;height:15px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.pdfr-swatch[aria-pressed=true]>span{box-shadow:0 0 0 2px var(--dsw-alias-bg-overlay),0 0 0 3.5px var(--dsw-alias-label-primary)}
+.pdfr-note-card{position:fixed;z-index:1001;box-sizing:border-box;width:280px;max-width:calc(100vw - 16px);display:flex;flex-direction:column;gap:8px;padding:8px 10px 10px;border:.5px solid var(--dsw-alias-border-l2);border-radius:12px;background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);box-shadow:0 8px 28px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.12);font-size:12px;line-height:1.5}
+.pdfr-note-head{display:flex;align-items:center;gap:0}
+.pdfr-note-head .pdfr-icon-btn{margin-left:auto}
+.pdfr-note-quote{margin:0;padding:1px 0 1px 8px;border-left:3px solid #ffd400;color:var(--dsw-alias-label-secondary);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.pdfr-note-quote[data-color=green]{border-left-color:#4cd964}
+.pdfr-note-quote[data-color=blue]{border-left-color:#4da3ff}
+.pdfr-note-quote[data-color=pink]{border-left-color:#ff6fa8}
 .pdfr-toast{position:fixed;z-index:1000;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 10px;border-radius:999px;font:inherit;font-size:13px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.22)}
 .pdfr-set{box-sizing:border-box;display:flex;flex-direction:column;gap:12px;padding:6px 8px 16px;color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5}
 .pdfr-set p{margin:0;color:var(--dsw-alias-label-secondary)}
@@ -455,6 +552,9 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       bookOpen: paths('M12 5v16', 'M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z'),
       spreadsheet: paths('M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z', 'M14 2v5a1 1 0 0 0 1 1h5', 'M8 13h2', 'M14 13h2', 'M8 17h2', 'M14 17h2'),
       alignLeft: paths('M21 5H3', 'M15 12H3', 'M17 19H3'),
+      highlighter: paths('m9 11-6 6v3h9l3-3', 'm22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4'),
+      download: paths('M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'),
+      messageSquare: paths('M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z', 'M13 8H7', 'M17 12H7'),
       /* interface */
       history: paths('M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', 'M3 3v5h5', 'M12 7v5l4 2'),
       settings: [...paths('M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915'), ['circle', { cx: 12, cy: 12, r: 3 }]],
@@ -468,6 +568,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       check: paths('m5 12 5 5 9-10'),
       plus: paths('M12 5v14M5 12h14'),
       minus: paths('M5 12h14'),
+      x: paths('M18 6 6 18', 'm6 6 12 12'),
       fit: paths('M4 8V5h3M20 8V5h-3M4 16v3h3M20 16v3h-3'),
       list: paths('M3 5h.01', 'M3 12h.01', 'M3 19h.01', 'M8 5h13', 'M8 12h13', 'M8 19h13'),
       eye: [...paths('M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0'), ['circle', { cx: 12, cy: 12, r: 3 }]],
@@ -751,10 +852,12 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       },
       async remove(id) {
         await withStore('readwrite', (store) => store.delete(id));
+        annotations.removeFile(id);
         this.emit();
       },
       async clear() {
         await withStore('readwrite', (store) => store.clear());
+        annotations.clearAll();
         this.emit();
       },
     };
@@ -839,6 +942,129 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       useEffect(() => buttons.subscribe(() => tick((n) => n + 1)), []);
       return buttons.get();
     }
+    /**
+     * PDF highlights and notes, kept per file in this browser's localStorage. Rectangles are fractions of the page
+     * (0..1), so they stay put at any zoom. One annotation can span pages: `parts` holds the rectangles of each page.
+     */
+    const NOTES_KEY = 'deepread.notes.v1:';
+    function cleanAnnotation(raw) {
+      if (!raw || typeof raw !== 'object' || !Array.isArray(raw.parts)) return null;
+      const num = (value) => (typeof value === 'number' && isFinite(value) ? value : null);
+      const parts = [];
+      for (const part of raw.parts) {
+        if (!part || !Number.isInteger(part.page) || part.page < 1 || !Array.isArray(part.rects)) continue;
+        const rects = part.rects
+          .map((rect) => (Array.isArray(rect) ? rect.map(num) : []))
+          .filter((rect) => rect.length === 4 && rect.every((value) => value !== null) && rect[2] > 0 && rect[3] > 0);
+        if (rects.length > 0) parts.push({ page: part.page, rects });
+      }
+      if (parts.length === 0) return null;
+      return {
+        id: typeof raw.id === 'string' && raw.id ? raw.id : newId(),
+        color: HIGHLIGHT_COLORS.some((item) => item.id === raw.color) ? raw.color : 'yellow',
+        note: typeof raw.note === 'string' ? raw.note.slice(0, MAX_NOTE) : '',
+        text: typeof raw.text === 'string' ? raw.text.slice(0, MAX_QUOTE) : '',
+        createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
+        parts,
+      };
+    }
+    const annotations = {
+      ...createEmitter(),
+      cache: new Map(),
+      get(fileId) {
+        if (!this.cache.has(fileId)) {
+          let list = [];
+          try {
+            const text = localStorage.getItem(NOTES_KEY + fileId);
+            const parsed = text ? JSON.parse(text) : null;
+            if (Array.isArray(parsed)) list = parsed.map(cleanAnnotation).filter(Boolean);
+          } catch (error) {
+            list = [];
+          }
+          this.cache.set(fileId, list);
+        }
+        return this.cache.get(fileId);
+      },
+      save(fileId, list) {
+        this.cache.set(fileId, list);
+        try {
+          if (list.length > 0) localStorage.setItem(NOTES_KEY + fileId, JSON.stringify(list));
+          else localStorage.removeItem(NOTES_KEY + fileId);
+        } catch (error) {
+          console.error('deepread: cannot save notes', error);
+        }
+        this.emit(fileId);
+      },
+      add(fileId, item) {
+        const clean = cleanAnnotation({ ...item, id: newId(), createdAt: Date.now() });
+        if (!clean) return null;
+        this.save(fileId, [...this.get(fileId), clean]);
+        return clean;
+      },
+      update(fileId, id, patch) {
+        const list = this.get(fileId);
+        if (!list.some((item) => item.id === id)) return;
+        this.save(fileId, list.map((item) => (item.id === id ? cleanAnnotation({ ...item, ...patch, id }) || item : item)));
+      },
+      remove(fileId, id) {
+        this.save(fileId, this.get(fileId).filter((item) => item.id !== id));
+      },
+      removeFile(fileId) {
+        this.cache.delete(fileId);
+        try { localStorage.removeItem(NOTES_KEY + fileId); } catch (error) { /* nothing stored */ }
+        this.emit(fileId);
+      },
+      clearAll() {
+        this.cache.clear();
+        try {
+          for (const key of Object.keys(localStorage)) {
+            if (key.startsWith(NOTES_KEY)) localStorage.removeItem(key);
+          }
+        } catch (error) { /* nothing stored */ }
+        this.emit(undefined);
+      },
+    };
+    /** Re-read a file's notes when another tab or window changes them. */
+    function watchNoteStorage() {
+      const onStorage = (event) => {
+        if (event.key === null) {
+          annotations.cache.clear();
+          annotations.emit(undefined);
+        } else if (event.key.startsWith(NOTES_KEY)) {
+          const fileId = event.key.slice(NOTES_KEY.length);
+          annotations.cache.delete(fileId);
+          annotations.emit(fileId);
+        }
+      };
+      window.addEventListener('storage', onStorage);
+      return () => window.removeEventListener('storage', onStorage);
+    }
+    /** The color a plain click on the highlight button uses: the one picked last. */
+    const HL_COLOR_KEY = 'deepread.hlcolor.v1';
+    function lastHighlightColor() {
+      try {
+        const saved = localStorage.getItem(HL_COLOR_KEY);
+        if (HIGHLIGHT_COLORS.some((item) => item.id === saved)) return saved;
+      } catch (error) { /* storage unavailable */ }
+      return HIGHLIGHT_COLORS[0].id;
+    }
+    function rememberHighlightColor(id) {
+      try { localStorage.setItem(HL_COLOR_KEY, id); } catch (error) { /* storage unavailable */ }
+    }
+    function useAnnotations(fileId) {
+      const [, tick] = useState(0);
+      useEffect(() => annotations.subscribe((changed) => {
+        if (changed === undefined || changed === fileId) tick((n) => n + 1);
+      }), [fileId]);
+      return fileId ? annotations.get(fileId) : EMPTY_LIST;
+    }
+    const EMPTY_LIST = [];
+    /** The annotation whose editor card is open, and where the card hangs: { fileId, id, anchor: {left, top, bottom} }. */
+    const noteEditor = { ...createEmitter(), current: null };
+    function openNoteEditor(next) {
+      noteEditor.current = next;
+      noteEditor.emit();
+    }
     /** Write text to the clipboard; falls back to execCommand where the async API is unavailable. */
     async function copyToClipboard(text) {
       try {
@@ -881,6 +1107,57 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       if (runtime.ctx) runtime.ctx.effect(() => () => URL.revokeObjectURL(url), 'deepread.worker-url');
       return lib;
     });
+    /**
+     * Write the highlights into a copy of the PDF as standard Highlight annotations (colour, quad points, note as
+     * Contents), so other viewers show them. `doc` is the PDF.js document: its viewports turn the stored page
+     * fractions back into PDF user space, whatever the page rotation or crop box.
+     */
+    async function exportAnnotatedPdf(PDFLib, bytes, doc, list) {
+      const { PDFDocument, PDFHexString } = PDFLib;
+      const pdf = await PDFDocument.load(bytes);
+      const pages = pdf.getPages();
+      for (const note of list) {
+        const rgb = HIGHLIGHT_COLORS.find((item) => item.id === note.color) || HIGHLIGHT_COLORS[0];
+        const color = [1, 3, 5].map((at) => parseInt(rgb.value.slice(at, at + 2), 16) / 255);
+        let first = true;
+        for (const part of note.parts) {
+          const target = pages[part.page - 1];
+          if (!target) continue;
+          const viewport = (await doc.getPage(part.page)).getViewport({ scale: 1 });
+          const point = (fx, fy) => viewport.convertToPdfPoint(fx * viewport.width, fy * viewport.height);
+          const quads = [];
+          const xs = [];
+          const ys = [];
+          for (const [x, y, w, hgt] of part.rects) {
+            const corners = [point(x, y), point(x + w, y), point(x, y + hgt), point(x + w, y + hgt)];
+            for (const [cx, cy] of corners) { quads.push(cx, cy); xs.push(cx); ys.push(cy); }
+          }
+          if (quads.length === 0) continue;
+          const entries = {
+            Type: 'Annot', Subtype: 'Highlight', F: 4, C: color, CA: 0.4,
+            Rect: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+            QuadPoints: quads,
+            M: PDFHexString.fromText('D:' + new Date(note.createdAt).toISOString().replace(/[-:T]/g, '').slice(0, 14) + 'Z'),
+          };
+          if (first && note.note) entries.Contents = PDFHexString.fromText(note.note);
+          first = false;
+          const ref = pdf.context.register(pdf.context.obj(entries));
+          target.node.addAnnot(ref);
+        }
+      }
+      return pdf.save();
+    }
+    /** Hand a file to the browser as a download. */
+    function downloadBytes(bytes, name, type) {
+      const url = URL.createObjectURL(new Blob([bytes], { type }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
     /** Load one packaged library chunk (SheetJS, JSZip) once; a failed load can be retried. */
     const chunkLoaders = {};
     function loadChunk(file) {
@@ -1388,7 +1665,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
 
     /** One PDF page: a canvas plus PDF.js's transparent text layer, drawn only while near the viewport. */
     function PdfPage(props) {
-      const { pdf, pageNumber, size, scale, lib, observer } = props;
+      const { pdf, pageNumber, size, scale, lib, observer, fileId, notes, flashId } = props;
       const hostRef = useRef(null);
       const canvasRef = useRef(null);
       const textRef = useRef(null);
@@ -1460,12 +1737,58 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         if (end) end.classList.remove('active');
       }, []);
 
+      /* A plain click (no selection) on a highlight opens its editor card. */
+      const onClick = (event) => {
+        if (!fileId || (event.target.closest && event.target.closest('.pdfr-note-marker'))) return;
+        const selection = window.getSelection();
+        if (selection && !selection.isCollapsed) return;
+        const box = hostRef.current && hostRef.current.getBoundingClientRect();
+        if (!box || box.width === 0 || box.height === 0) return;
+        const x = (event.clientX - box.left) / box.width;
+        const y = (event.clientY - box.top) / box.height;
+        for (let index = notes.length - 1; index >= 0; index -= 1) {
+          const part = notes[index].parts.find((item) => item.page === pageNumber);
+          const hit = part && part.rects.find((r) => x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3]);
+          if (hit) {
+            openNoteEditor({
+              fileId, id: notes[index].id,
+              anchor: { left: box.left + hit[0] * box.width, top: box.top + hit[1] * box.height, bottom: box.top + (hit[1] + hit[3]) * box.height },
+            });
+            return;
+          }
+        }
+      };
+      const layer = notes.map((note) => {
+        const part = note.parts.find((item) => item.page === pageNumber);
+        if (!part) return null;
+        const first = note.parts[0] === part;
+        const children = part.rects.map((r, index) => h('div', {
+          key: index, className: 'pdfr-hl', 'data-color': note.color, 'data-flash': note.id === flashId,
+          style: { left: r[0] * 100 + '%', top: r[1] * 100 + '%', width: r[2] * 100 + '%', height: r[3] * 100 + '%' },
+        }));
+        if (note.note && first) {
+          const r = part.rects[0];
+          children.push(h('button', {
+            key: 'marker', type: 'button', className: 'pdfr-note-marker', 'data-color': note.color,
+            title: tr('note.marker'), 'aria-label': tr('note.marker'),
+            style: { left: r[0] * 100 + '%', top: r[1] * 100 + '%' },
+            onClick: (event) => {
+              event.stopPropagation();
+              const box = event.currentTarget.getBoundingClientRect();
+              openNoteEditor({ fileId, id: note.id, anchor: { left: box.left, top: box.top, bottom: box.bottom } });
+            },
+          }, h(Icon, { name: 'messageSquare', size: 10 })));
+        }
+        return h(React.Fragment, { key: note.id }, children);
+      });
+
       return h('div', {
-        ref: hostRef, className: 'pdfr-page', 'data-page-number': pageNumber,
-        style: { width, height, '--scale-factor': scale },
+        ref: hostRef, className: 'pdfr-page', 'data-page-number': pageNumber, 'data-file-id': fileId,
+        style: { width, height, '--scale-factor': scale }, onClick,
       }, [
         h('canvas', { key: 'c', ref: canvasRef }),
         h('div', { key: 't', ref: textRef, className: 'textLayer', onMouseDown: onDown, onMouseUp: onUp }),
+        h('div', { key: 'n', className: 'pdfr-hls' }, layer),
       ]);
     }
 
@@ -1505,7 +1828,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
      * message (loading or failed, with retry) or the content in a scroll area. `below` sits under the toolbar once ready.
      */
     function ViewerFrame(props) {
-      const { t, name, meta, state, ready, onReload, actions, below, loadingKey, scroll, children } = props;
+      const { t, name, meta, state, ready, onReload, actions, below, overlay, loadingKey, scroll, children } = props;
       let body;
       if (state.phase === 'error') {
         body = h('div', { key: 'body', className: 'pdfr-center', role: 'alert' }, [
@@ -1526,6 +1849,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         ]),
         state.phase === 'ready' && ready ? below : null,
         body,
+        state.phase === 'ready' && ready ? overlay : null,
       ]);
     }
 
@@ -1566,6 +1890,33 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       ]);
     }
 
+    /** Highlights of the open PDF in reading order; a click jumps to one. The header exports the PDF with them embedded. */
+    function NotesPanel(props) {
+      const { t, fileId, notes, exporting, error, onJump, onExport, onClose } = props;
+      const ordered = notes.slice().sort((a, b) => a.parts[0].page - b.parts[0].page || a.parts[0].rects[0][1] - b.parts[0].rects[0][1]);
+      return h('div', { className: 'pdfr-notes', role: 'region', 'aria-label': t('notes.title') }, [
+        h('div', { key: 'head', className: 'pdfr-notes-head' }, [
+          h('span', { key: 'n' }, t('notes.title')),
+          h('span', { key: 'c', className: 'pdfr-notes-count' }, String(notes.length)),
+          h(IconButton, {
+            key: 'e', disabled: notes.length === 0 || exporting, label: exporting ? t('notes.exporting') : t('notes.export'), onClick: onExport,
+          }, h(Icon, { name: 'download' })),
+          h(IconButton, { key: 'x', style: { marginLeft: 0 }, label: t('viewer.close'), onClick: onClose }, h(Icon, { name: 'x' })),
+        ]),
+        error && h('div', { key: 'err', className: 'pdfr-notes-error', role: 'alert' }, error),
+        ordered.length === 0
+          ? h('p', { key: 'empty', className: 'pdfr-notes-empty' }, t('notes.empty'))
+          : h('div', { key: 'list', className: 'pdfr-notes-list' }, ordered.map((note) => h('div', { key: note.id, className: 'pdfr-notes-item' }, [
+            h('button', { key: 'o', type: 'button', className: 'pdfr-notes-open', onClick: () => onJump(note) }, [
+              h('span', { key: 'p', className: 'pdfr-notes-page' }, t('notes.page', { page: note.parts[0].page })),
+              note.text && h('span', { key: 'q', className: 'pdfr-notes-quote', 'data-color': note.color }, note.text),
+              note.note && h('span', { key: 't', className: 'pdfr-notes-text' }, note.note),
+            ]),
+            h(IconButton, { key: 'd', label: t('note.delete'), onClick: () => annotations.remove(fileId, note.id) }, h(Icon, { name: 'trash' })),
+          ]))),
+      ]);
+    }
+
     /** Right-sidebar PDF viewer: PDF.js canvas pages with a selectable text layer. */
     function PdfViewerTab(props) {
       const { t, target } = useViewerTarget(props);
@@ -1578,6 +1929,13 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       const [scrollNode, setScrollNode] = useState(null);
       const observer = useNearObserver(scrollNode);
       const [lib, setLib] = useState(null);
+      const notes = useAnnotations(target ? target.id : undefined);
+      const [panelOpen, setPanelOpen] = useState(false);
+      const [flashId, setFlashId] = useState(null);
+      const [exporting, setExporting] = useState(false);
+      const [exportError, setExportError] = useState('');
+      const flashTimer = useRef(0);
+      useEffect(() => () => clearTimeout(flashTimer.current), []);
 
       useEffect(() => {
         if (!target) {
@@ -1642,12 +2000,47 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         setZoom(clampZoom(direction > 0 ? base * 1.25 : base / 1.25));
       };
 
+      const jump = (note) => {
+        const part = note.parts[0];
+        const page = scrollNode && scrollNode.querySelector('.pdfr-page[data-page-number="' + part.page + '"]');
+        if (!page) return;
+        const outer = scrollNode.getBoundingClientRect();
+        const box = page.getBoundingClientRect();
+        const top = scrollNode.scrollTop + (box.top - outer.top) + part.rects[0][1] * box.height - scrollNode.clientHeight / 3;
+        scrollNode.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        setFlashId(note.id);
+        clearTimeout(flashTimer.current);
+        flashTimer.current = setTimeout(() => setFlashId(null), 2000);
+      };
+      const exportPdf = async () => {
+        if (!target || !doc || exporting) return;
+        setExporting(true);
+        setExportError('');
+        try {
+          const [PDFLib, stored] = await Promise.all([loadChunk('./client.pdflib.js'), history.bytes(target.id)]);
+          if (!stored) throw new Error(t('history.missing'));
+          const out = await exportAnnotatedPdf(PDFLib, new Uint8Array(stored.slice(0)), doc, notes);
+          downloadBytes(out, target.name.replace(/\.pdf$/i, '') + '-annotated.pdf', 'application/pdf');
+        } catch (error) {
+          console.error('deepread: export failed', error);
+          setExportError(describe(error, t('notes.exportFailed')));
+        } finally {
+          setExporting(false);
+        }
+      };
+
       return h(ViewerFrame, {
         t, name: target ? target.name : '', state, ready: !!doc, loadingKey: 'viewer.loading',
         meta: doc ? t('viewer.pages', { count: doc.numPages }) : '',
         onReload: () => setReloadKey((n) => n + 1),
         scroll: { className: 'pdfr-scroll', ref: setScrollNode, 'data-pdfr-scroll': true },
+        overlay: panelOpen ? h(NotesPanel, {
+          t, fileId: target ? target.id : '', notes, exporting, error: exportError, onJump: jump, onExport: exportPdf, onClose: () => setPanelOpen(false),
+        }) : null,
         actions: [
+          h(IconButton, {
+            key: 'n', disabled: !doc, label: t('notes.toggle'), 'aria-pressed': panelOpen, onClick: () => setPanelOpen((open) => !open),
+          }, h(Icon, { name: 'messageSquare' })),
           h(IconButton, { key: 'o', disabled: !doc, label: t('viewer.zoomOut'), onClick: () => step(-1) }, h(Icon, { name: 'minus' })),
           h('span', { key: 'z', className: 'pdfr-zoom' }, Math.round(scale * 100) + '%'),
           h(IconButton, { key: 'i', disabled: !doc, label: t('viewer.zoomIn'), onClick: () => step(1) }, h(Icon, { name: 'plus' })),
@@ -1655,6 +2048,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         ],
       }, h('div', { className: 'pdfr-pages' }, sizes.length === 0 ? null : Array.from({ length: doc ? doc.numPages : 0 }, (_, index) => h(PdfPage, {
         key: index + 1, pdf: doc, pageNumber: index + 1, size: sizes[index] || first, scale, lib, observer,
+        fileId: target ? target.id : undefined, notes, flashId,
       }))));
     }
 
@@ -2025,6 +2419,149 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
       return null;
     }
 
+    /** Merge rectangles that sit on one line and touch or overlap, so a highlighted line is a few boxes instead of one per text run. */
+    function mergeLineRects(rects) {
+      const out = [];
+      for (const rect of rects) {
+        let current = { ...rect };
+        for (let index = 0; index < out.length; index += 1) {
+          const other = out[index];
+          const overlap = Math.min(current.bottom, other.bottom) - Math.max(current.top, other.top);
+          const height = Math.min(current.bottom - current.top, other.bottom - other.top);
+          const gap = Math.max(current.left, other.left) - Math.min(current.right, other.right);
+          if (overlap > height * 0.5 && gap <= Math.max(2, height * 0.35)) {
+            current = {
+              left: Math.min(current.left, other.left), right: Math.max(current.right, other.right),
+              top: Math.min(current.top, other.top), bottom: Math.max(current.bottom, other.bottom),
+            };
+            out.splice(index, 1);
+            index = -1;
+          }
+        }
+        out.push(current);
+      }
+      return out;
+    }
+
+    /** The current selection as per-page rectangles (fractions of each page), or null when it is not inside PDF pages. */
+    function capturePdfSelection() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null;
+      const range = selection.getRangeAt(0);
+      const node = range.commonAncestorContainer;
+      const root = (node.nodeType === 1 ? node : node.parentElement);
+      const scroller = root && root.closest && root.closest('[data-pdfr-scroll]');
+      if (!scroller) return null;
+      const parts = [];
+      let fileId;
+      for (const page of scroller.querySelectorAll('.pdfr-page')) {
+        const layer = page.querySelector('.textLayer');
+        if (!layer || !range.intersectsNode(layer)) continue;
+        const box = page.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) continue;
+        fileId = page.dataset.fileId || fileId;
+        const raw = [];
+        const walker = document.createTreeWalker(layer, NodeFilter.SHOW_TEXT);
+        for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+          if (!range.intersectsNode(text)) continue;
+          const part = document.createRange();
+          part.selectNodeContents(text);
+          if (text === range.startContainer) part.setStart(text, range.startOffset);
+          if (text === range.endContainer) part.setEnd(text, range.endOffset);
+          for (const r of part.getClientRects()) {
+            if (r.width > 0.5 && r.height > 0.5) raw.push({ left: r.left, right: r.right, top: r.top, bottom: r.bottom });
+          }
+        }
+        const rects = mergeLineRects(raw)
+          .map((r) => [
+            Math.max(0, (r.left - box.left) / box.width), Math.max(0, (r.top - box.top) / box.height),
+            Math.min(1, (r.right - box.left) / box.width), Math.min(1, (r.bottom - box.top) / box.height),
+          ])
+          .map(([x1, y1, x2, y2]) => [x1, y1, x2 - x1, y2 - y1])
+          .filter((r) => r[2] > 0 && r[3] > 0);
+        if (rects.length > 0) parts.push({ page: Number(page.dataset.pageNumber), rects });
+      }
+      return fileId && parts.length > 0 ? { fileId, parts } : null;
+    }
+
+    /** Floating card for one highlight: color, delete and the note text. Closes on outside click, Escape, scroll or resize. */
+    function NoteEditor(props) {
+      const t = props.t;
+      const [, tick] = useState(0);
+      useEffect(() => noteEditor.subscribe(() => tick((n) => n + 1)), []);
+      const view = noteEditor.current;
+      const [, tickNotes] = useState(0);
+      useEffect(() => annotations.subscribe(() => tickNotes((n) => n + 1)), []);
+      const item = view ? annotations.get(view.fileId).find((entry) => entry.id === view.id) : undefined;
+      const cardRef = useRef(null);
+      const areaRef = useRef(null);
+      const viewId = view && view.id;
+      const [draft, setDraft] = useState('');
+      useEffect(() => {
+        setDraft(item ? item.note : '');
+        const area = areaRef.current;
+        if (area) {
+          area.focus();
+          area.setSelectionRange(area.value.length, area.value.length);
+        }
+      }, [viewId]);
+      useEffect(() => {
+        if (!view) return undefined;
+        const close = () => openNoteEditor(null);
+        const onDown = (event) => {
+          if (cardRef.current && cardRef.current.contains(event.target)) return;
+          close();
+        };
+        const onKey = (event) => { if (event.key === 'Escape') close(); };
+        const onScroll = (event) => {
+          if (cardRef.current && event.target instanceof Node && cardRef.current.contains(event.target)) return;
+          close();
+        };
+        document.addEventListener('pointerdown', onDown, true);
+        document.addEventListener('keydown', onKey, true);
+        document.addEventListener('scroll', onScroll, true);
+        window.addEventListener('resize', close);
+        return () => {
+          document.removeEventListener('pointerdown', onDown, true);
+          document.removeEventListener('keydown', onKey, true);
+          document.removeEventListener('scroll', onScroll, true);
+          window.removeEventListener('resize', close);
+        };
+      }, [viewId]);
+      useEffect(() => { if (view && !item) openNoteEditor(null); }, [view, item]);
+      if (!view || !item) return null;
+
+      const width = 280;
+      const height = 190;
+      const left = Math.max(8, Math.min(view.anchor.left, window.innerWidth - width - 8));
+      const below = view.anchor.bottom + 8;
+      const top = below + height > window.innerHeight ? Math.max(8, view.anchor.top - height - 8) : below;
+      return h('div', {
+        ref: cardRef, className: 'pdfr-note-card', role: 'dialog', style: { left, top },
+      }, [
+        h('div', { key: 'head', className: 'pdfr-note-head' }, [
+          ...HIGHLIGHT_COLORS.map((color) => h('button', {
+            key: color.id, type: 'button', className: 'pdfr-swatch', 'aria-pressed': item.color === color.id,
+            title: t('note.color.' + color.id), 'aria-label': t('note.color.' + color.id),
+            onClick: () => annotations.update(view.fileId, item.id, { color: color.id }),
+          }, h('span', { style: { background: color.value } }))),
+          h(IconButton, {
+            key: 'del', label: t('note.delete'),
+            onClick: () => { annotations.remove(view.fileId, item.id); openNoteEditor(null); },
+          }, h(Icon, { name: 'trash' })),
+        ]),
+        item.text && h('p', { key: 'quote', className: 'pdfr-note-quote', 'data-color': item.color }, item.text),
+        h('textarea', {
+          key: 'area', ref: areaRef, className: 'pdfr-input', rows: 3, maxLength: MAX_NOTE, value: draft,
+          placeholder: t('note.placeholder'),
+          onChange: (event) => {
+            setDraft(event.target.value);
+            annotations.update(view.fileId, item.id, { note: event.target.value });
+          },
+        }),
+      ]);
+    }
+
     /** Text and toolbar position of a selection; `frame` is the iframe that holds it, whose offset turns its rects into page coordinates. */
     function describeSelection(selection, frame) {
       const range = selection.getRangeAt(0);
@@ -2056,13 +2593,14 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         const bounds = view && view.getBoundingClientRect();
         if (bounds && (last.bottom < bounds.top || last.top > bounds.bottom)) return null;
       }
+      const pdf = !frame && !!element.closest('[data-pdfr-scroll]');
       const named = buttons.get().filter((item) => item.name.trim() !== '');
       const inlineCount = named.filter((item) => !item.folded).length;
-      const width = Math.min(window.innerWidth - 16, 24 + 108 * inlineCount + (named.length > inlineCount ? 48 : 0));
+      const width = Math.min(window.innerWidth - 16, 12 + 84 * inlineCount + (named.length > inlineCount ? 34 : 0) + (pdf ? 150 : 0));
       const left = Math.max(8, Math.min(last.right - 24, window.innerWidth - width - 8));
       const below = last.bottom + 8;
       const top = below + TOOLBAR_HEIGHT > window.innerHeight ? Math.max(8, last.top - TOOLBAR_HEIGHT - 8) : below;
-      return { text, left, top, sessionId: owner ? owner.dataset.sidebarRightSession : undefined };
+      return { text, left, top, pdf, sessionId: owner ? owner.dataset.sidebarRightSession : undefined };
     }
 
     function clearReaderSelections() {
@@ -2148,7 +2686,9 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         const room = side === 'below' ? roomBelow : roomAbove;
         return { side, maxHeight: Math.max(60, Math.floor(room)) };
       })();
-      useEffect(() => { setMenuOpen(false); }, [pending && pending.text, pending && pending.left, pending && pending.top]);
+      const [pickOpen, setPickOpen] = useState(false);
+      const [hlColor, setHlColor] = useState(lastHighlightColor);
+      useEffect(() => { setMenuOpen(false); setPickOpen(false); }, [pending && pending.text, pending && pending.left, pending && pending.top]);
 
       function finish(at, ok, okText, failText) {
         setPending(null);
@@ -2184,32 +2724,82 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
         finish(at, ok, immediately ? 'send.sent' : 'send.done', 'send.failed');
       }
 
+      /** Highlight the selection in a color; `withNote` also opens the note editor on the new highlight. */
+      function annotate(color, withNote) {
+        if (!pending) return;
+        const at = { left: pending.left, top: pending.top };
+        if (!withNote) { rememberHighlightColor(color); setHlColor(color); }
+        const captured = capturePdfSelection();
+        const created = captured && annotations.add(captured.fileId, {
+          color, note: '', text: pending.text.slice(0, MAX_QUOTE), parts: captured.parts,
+        });
+        setPending(null);
+        if (!created) {
+          showToast({ ...at, tone: 'error', text: t('note.failed') });
+          return;
+        }
+        clearReaderSelections();
+        if (withNote) {
+          openNoteEditor({ fileId: captured.fileId, id: created.id, anchor: { left: at.left, top: at.top - 8, bottom: at.top + TOOLBAR_HEIGHT - 8 } });
+        }
+      }
+
       function toolButton(button, role) {
         return h('button', {
           key: button.id, type: 'button', title: button.name, role, className: 'pdfr-send',
           onClick: () => run(button),
-        }, [h(ButtonIcon, { key: 'g', icon: button.icon, size: 18 }), h('span', { key: 'l', className: 'pdfr-send-label' }, button.name)]);
+        }, [h(ButtonIcon, { key: 'g', icon: button.icon, size: 15 }), h('span', { key: 'l', className: 'pdfr-send-label' }, button.name)]);
       }
 
       return h(React.Fragment, null, [
         h('style', { key: 'css' }, CSS),
-        pending && configured.length > 0 && h('div', {
+        pending && (configured.length > 0 || pending.pdf) && h('div', {
           key: 'send', className: 'pdfr-actions', 'data-pdfr-send': true, role: 'toolbar',
           style: { left: pending.left, top: pending.top },
           onMouseDown: (event) => event.preventDefault(),
         }, [
+          ...(pending.pdf ? [
+            h('div', {
+              key: 'hl', className: 'pdfr-hl-pick', 'data-open': pickOpen,
+              onMouseEnter: () => setPickOpen(true), onMouseLeave: () => setPickOpen(false),
+              onFocus: () => setPickOpen(true),
+              onBlur: (event) => { if (!event.currentTarget.contains(event.relatedTarget)) setPickOpen(false); },
+              onKeyDown: (event) => { if (event.key === 'Escape') setPickOpen(false); },
+            }, [
+              h('button', {
+                key: 'b', type: 'button', className: 'pdfr-send', 'aria-haspopup': 'true', 'aria-expanded': pickOpen,
+                title: t('note.highlight'), onClick: () => annotate(hlColor, false),
+              }, [
+                h(Icon, { key: 'g', name: 'highlighter', size: 15 }),
+                h('span', { key: 'l', className: 'pdfr-send-label' }, t('note.highlight')),
+                h('span', { key: 'd', className: 'pdfr-hl-dot', style: { background: (HIGHLIGHT_COLORS.find((c) => c.id === hlColor) || HIGHLIGHT_COLORS[0]).value } }),
+              ]),
+              pickOpen && h('div', { key: 'pop', className: 'pdfr-hl-pop', 'data-side': menuPlacement.side, role: 'group', 'aria-label': t('note.highlight') },
+                HIGHLIGHT_COLORS.map((color) => h('button', {
+                  key: color.id, type: 'button', className: 'pdfr-swatch', 'aria-pressed': color.id === hlColor,
+                  title: t('note.color.' + color.id), 'aria-label': t('note.color.' + color.id),
+                  onClick: () => annotate(color.id, false),
+                }, h('span', { style: { background: color.value } })))),
+            ]),
+            h('button', {
+              key: 'hl-note', type: 'button', className: 'pdfr-send', title: t('note.add'),
+              onClick: () => annotate(hlColor, true),
+            }, [h(Icon, { key: 'g', name: 'messageSquare', size: 15 }), h('span', { key: 'l', className: 'pdfr-send-label' }, t('note.add'))]),
+            configured.length > 0 && h('span', { key: 'hl-sep', className: 'pdfr-actions-sep', 'aria-hidden': true }),
+          ] : []),
           ...inline.map((button) => toolButton(button)),
           overflow.length > 0 && inline.length > 0 && h('span', { key: 'sep', className: 'pdfr-actions-sep', 'aria-hidden': true }),
           overflow.length > 0 && h('button', {
             key: 'more', type: 'button', className: 'pdfr-send pdfr-send-more', 'data-more': true,
             'aria-haspopup': 'menu', 'aria-expanded': menuOpen, title: t('send.more'), 'aria-label': t('send.more'),
             onClick: () => setMenuOpen((open) => !open),
-          }, h(Icon, { name: 'chevronDown', size: 18 })),
+          }, h(Icon, { name: 'chevronDown', size: 15 })),
           overflow.length > 0 && menuOpen && h('div', {
             key: 'menu', className: 'pdfr-actions-menu', role: 'menu',
             'data-side': menuPlacement.side, style: { maxHeight: menuPlacement.maxHeight },
           }, overflow.map((button) => toolButton(button, 'menuitem'))),
         ]),
+        h(NoteEditor, { key: 'note', t }),
         toast && h('div', {
           key: 'toast', className: 'pdfr-toast', role: 'status', 'data-tone': toast.tone,
           style: { left: toast.left, top: toast.top },
@@ -2264,6 +2854,7 @@ textarea.pdfr-input{resize:vertical;min-height:54px}
           return () => disposers.forEach((dispose) => dispose());
         });
         ctx.effect(() => watchButtonStorage(), 'deepread.button-storage');
+        ctx.effect(() => watchNoteStorage(), 'deepread.note-storage');
         ctx.slots.inject('conversation.composer.dock', () => ctx.slots.register({
           name: 'conversation.composer.dock', id: 'deepread-bridge', order: 1000,
         }, ComposerBridge));
